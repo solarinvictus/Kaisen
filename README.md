@@ -1,6 +1,14 @@
 # Kaisen — FFXI Battle Parser
 
-Version 1.0.19 • HorizonXI • Ashita v4
+Version 1.0.20 • HorizonXI • Ashita v4
+
+Change in 1.0.20: Report menu sends the selected Current fight or Session top six to party or linkshell, including damage, DPS, share, and melee accuracy. Preview data cannot be reported.
+
+- `/kaisen report party` or `/kaisen report linkshell`: report the top six.
+- `/kaisen report party 18`: include up to 18 combatants (also works with linkshell).
+- `/kaisen report cancel`: cancel remaining lines.
+
+Reports snapshot current values and send one line every 1.2 seconds. Resetting or zoning cancels remaining lines. No report is sent automatically.
 
 Change in 1.0.19: Preview cycles sample damage every 1.4 seconds to demonstrate smooth bar growth and shrinkage for all jobs. Live combat data is unaffected.
 

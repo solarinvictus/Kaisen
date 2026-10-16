@@ -178,7 +178,7 @@ local function animatePreview(e,elapsed)
         end
     end
 end
-function M.draw(engine,cfg,save,reset)
+function M.draw(engine,cfg,save,reset,report)
     if not cfg.visible then return end
     local scale=cfg.scale
     theme.push()
@@ -209,7 +209,19 @@ function M.draw(engine,cfg,save,reset)
         if control(engine.paused and 'Resume' or 'Pause',engine.paused,88,scale) then engine:pause(not engine.paused) end
         imgui.SameLine()
         if control('Reset',M.confirm,72,scale) then M.confirm=not M.confirm end
+        imgui.SameLine()
+        if control('Report',M.reporting,64,scale) then M.reporting=not M.reporting end
         imgui.PopStyleVar(2)
+        if M.reporting then
+            imgui.TextColored(quiet,'Report top 6: '..(M.mode=='session' and 'Session' or 'Current fight'))
+            if M.preview then
+                imgui.TextColored(gold,'Turn off Preview to report real results.')
+            else
+                if imgui.SmallButton('Send to Party') and report then report('party',6) end
+                imgui.SameLine()
+                if imgui.SmallButton('Send to Linkshell') and report then report('linkshell',6) end
+            end
+        end
         if M.confirm then
             imgui.TextColored(gold,'Clear fight and session data?')
             imgui.SameLine();if imgui.SmallButton('Clear') then reset();M.confirm=false;M.selected=nil end
