@@ -2,6 +2,8 @@
 
 Version 1.0.20 • HorizonXI • Ashita v4
 
+![Kaisen addon preview](kaisen pic.png)
+
 Change in 1.0.20: Report menu sends the selected Current fight or Session top six to party or linkshell, including damage, DPS, share, and melee accuracy. Preview data cannot be reported.
 
 - `/kaisen report party` or `/kaisen report linkshell`: report the top six.
