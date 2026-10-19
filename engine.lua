@@ -16,7 +16,21 @@ local function segment()
 end
 function M.new(timeout)
     return setmetatable({session=segment(), current=segment(), active=false, paused=false,
-        elapsed=0, fights=0, timeout=timeout or 15, seen={}, seen_order={}}, {__index=M})
+        include_skillchains=false, elapsed=0, fights=0, timeout=timeout or 15, seen={}, seen_order={}}, {__index=M})
+end
+function M:set_skillchains(enabled)
+    enabled=enabled==true
+    if self.include_skillchains==enabled then return end
+    local sign=enabled and 1 or -1
+    for _,s in ipairs({self.current,self.session}) do
+        for _,a in pairs(s.actors) do
+            local n=a.raw_skillchain or 0
+            a.total=a.total+sign*n;s.total=s.total+sign*n
+            a.pet=a.pet+sign*(a.pet_skillchain or 0)
+            a.skillchain=enabled and n or 0
+        end
+    end
+    self.include_skillchains=enabled
 end
 function M:reset()
     self.session, self.current = segment(), segment()
@@ -59,15 +73,21 @@ local function fresh_actor(owner)
     return {id=owner.id,name=owner.name,job=owner.job or 0,total=0,pet=0,skillchain=0,
         melee={hits=0,misses=0,crits=0,avoided=0},ranged={hits=0,misses=0,crits=0,avoided=0},sources={}}
 end
-local function accumulate(s, owner, event, now)
+local function accumulate(s, owner, event, now, include_skillchains)
     s.first=s.first or now; s.last=now; s.count=s.count+1
     local a=s.actors[owner.id]
     if not a then a=fresh_actor(owner);s.actors[owner.id]=a end
     a.name, a.job=owner.name,owner.job or a.job
     local n=event.amount or 0
-    a.total=a.total+n; s.total=s.total+n
-    if owner.pet then a.pet=a.pet+n end
-    if event.category=='Skillchain' then a.skillchain=a.skillchain+n end
+    local sc=event.category=='Skillchain'
+    local counted=(not sc or include_skillchains) and n or 0
+    a.total=a.total+counted;s.total=s.total+counted
+    if owner.pet then a.pet=a.pet+counted end
+    if sc then
+        a.raw_skillchain=(a.raw_skillchain or 0)+n
+        if owner.pet then a.pet_skillchain=(a.pet_skillchain or 0)+n end
+        a.skillchain=a.skillchain+counted
+    end
     if not owner.pet and event.accuracy then
         local accuracy=a[event.accuracy]
         if event.result=='hit' then accuracy.hits=accuracy.hits+1
@@ -79,7 +99,7 @@ local function accumulate(s, owner, event, now)
     local src=a.sources[key]
     if not src then
         src={name=(owner.pet and (owner.pet..' / ') or '')..event.name,
-            category=owner.pet and 'Pet' or event.category,total=0,hits=0,misses=0,avoided=0,crits=0,bursts=0,max=0}
+            is_skillchain=sc,category=owner.pet and 'Pet' or event.category,total=0,hits=0,misses=0,avoided=0,crits=0,bursts=0,max=0}
         a.sources[key]=src
     end
     src.total=src.total+n;src.max=math.max(src.max,n)
@@ -97,8 +117,8 @@ function M:record(owner, target, event, now, target_name)
         self.current=segment();self.active=true;self.fights=self.fights+1
     end
     self.current.targets[target]={name=target_name or ('Target '..target),dead=false}
-    accumulate(self.current,owner,event,now)
-    accumulate(self.session,owner,event,now)
+    accumulate(self.current,owner,event,now,self.include_skillchains)
+    accumulate(self.session,owner,event,now,self.include_skillchains)
 end
 local function source(category,id,message,animation,resource)
     if category==1 and animation~=4 then return 'Melee','Melee','melee','melee' end

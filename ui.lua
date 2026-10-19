@@ -124,7 +124,7 @@ local function drawCombatant(actor,leader,theme,scale,color,animatedFraction)
     -- A cursor move alone cannot extend layout bounds in newer ImGui versions.
     imgui.Dummy({0,0})
 end
-local function details(actor,scale)
+local function details(actor,scale,include_skillchains)
     imgui.Spacing()
     imgui.TextColored(gold,actor.name..' / DAMAGE BREAKDOWN')
     imgui.SameLine()
@@ -133,7 +133,9 @@ local function details(actor,scale)
     imgui.Text(('Ranged: %s  (%d hit / %d miss)'):format(percent(Engine.accuracy(actor.ranged)),actor.ranged.hits,actor.ranged.misses))
     imgui.TextColored(quiet,('Avoided: %d melee / %d ranged'):format(actor.melee.avoided,actor.ranged.avoided))
     imgui.TextColored(quiet,('Pet: %s   |   Skillchain: %s'):format(number(actor.pet),number(actor.skillchain)))
-    local rows={};for _,v in pairs(actor.sources) do rows[#rows+1]=v end
+    local rows={};for _,v in pairs(actor.sources) do
+        if include_skillchains or not v.is_skillchain then rows[#rows+1]=v end
+    end
     table.sort(rows,function(a,b) if a.total==b.total then return a.name<b.name end return a.total>b.total end)
     if child('source_scroll',195*scale) then
         if table_begin('sources',{{'Action / source'},{'Damage',67},{'Hits',30},{'Miss',30},{'Avg',45},{'Max',48}},scale) then
@@ -228,6 +230,12 @@ function M.draw(engine,cfg,save,reset,report)
             imgui.SameLine();if imgui.SmallButton('Cancel') then M.confirm=false end
         end
         if M.settings then
+            local chains={cfg.include_skillchains==true}
+            if imgui.Checkbox('Include skillchain damage',chains) then
+                cfg.include_skillchains=chains[1]
+                engine:set_skillchains(cfg.include_skillchains)
+                save()
+            end
             local locked={cfg.locked}
             if imgui.Checkbox('Lock position / size',locked) then cfg.locked=locked[1];save() end
             imgui.SameLine()
@@ -286,7 +294,7 @@ function M.draw(engine,cfg,save,reset,report)
         imgui.EndChild()
         imgui.PopStyleVar(2)
         if #rows==0 then imgui.TextColored(quiet,'Attack a monster, or enable Preview in Settings.') end
-        if M.selected and segment.actors[M.selected] then details(segment.actors[M.selected],scale) end
+        if M.selected and segment.actors[M.selected] then details(segment.actors[M.selected],scale,cfg.include_skillchains) end
         imgui.Separator()
         imgui.TextColored(quiet,'Click a combatant to inspect damage')
         tooltip('M.Acc = melee hits / (hits + misses). Excludes WS, spells, pet attacks and special avoidance.')

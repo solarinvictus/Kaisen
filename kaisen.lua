@@ -1,7 +1,7 @@
 -- Kaisen: FFXI-themed party damage parser. GPL-3.0-or-later.
 addon.name='kaisen'
 addon.author='OpenAI'
-addon.version='1.0.20'
+addon.version='1.0.21'
 addon.desc='Party damage, DPS and accuracy with an FFXI-themed UI.'
 require('common')
 local imgui=require('imgui')
@@ -11,7 +11,7 @@ local Engine=require('engine')
 local UI=require('ui')
 local Icons=require('jobicons')
 local reporter=require('report').new()
-local defaults=T{visible=true,locked=false,x=100,y=160,width=520,height=340,scale=1.0,timeout=15,icon_theme='FFXI'}
+local defaults=T{visible=true,locked=false,x=100,y=160,width=520,height=340,scale=1.0,timeout=15,include_skillchains=false,icon_theme='FFXI'}
 local cfg=settings.load(defaults)
 local engine=Engine.new(cfg.timeout)
 local identity=nil
@@ -26,6 +26,8 @@ local function sanitize()
     cfg.timeout=math.max(5,math.min(60,tonumber(cfg.timeout) or 15))
     cfg.x=tonumber(cfg.x) or 100;cfg.y=tonumber(cfg.y) or 160
     cfg.icon_theme=Icons.normalize(cfg.icon_theme)
+    cfg.include_skillchains=cfg.include_skillchains==true
+    engine:set_skillchains(cfg.include_skillchains)
     engine.timeout=cfg.timeout
 end
 sanitize()

@@ -2,8 +2,6 @@
 
 Version 1.0.20 • HorizonXI • Ashita v4
 
-![Kaisen addon preview](kaisen.png)
-
 Change in 1.0.20: Report menu sends the selected Current fight or Session top six to party or linkshell, including damage, DPS, share, and melee accuracy. Preview data cannot be reported.
 
 - `/kaisen report party` or `/kaisen report linkshell`: report the top six.
@@ -190,3 +188,7 @@ error, send the exact Ashita error text and what happened immediately before it.
 - `assets/jobs/`: original XIUI job-icon sets and accompanying credits.
 
 See `NOTICE.md` and `LICENSE` for sources and licensing.
+
+## Version 1.0.21 — Skillchain damage setting
+
+Settings now includes **Include skillchain damage**, off by default for new installs and existing settings without this option. The choice is saved. Toggling immediately updates current and session damage totals, DPS, shares, pet totals, breakdowns and subsequently generated reports. Recorded skillchain damage is retained internally so turning it back on restores it. Weapon skill damage, additional effects and magic bursts remain counted.

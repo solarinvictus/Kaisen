@@ -1,6 +1,6 @@
 # Kaisen source notice
 
-Kaisen 1.0.20 — 2026-10-14.
+Kaisen 1.0.21 — 2026-10-14.
 Original Lua implementation generated for the user's HorizonXI setup.
 Distributed under GNU GPL version 3 or, at your option, any later version.
 The complete GPL v3 license is in LICENSE; all runtime source is included.
